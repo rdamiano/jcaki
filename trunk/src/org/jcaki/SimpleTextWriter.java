@@ -23,6 +23,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Arrays;
 
 /**
  * SimpleTextWriter is generally used for writing information to the files easily.
@@ -220,10 +221,7 @@ public final class SimpleTextWriter implements Closeable {
     }
 
     /**
-     * Writes the <code>toString()</code> value of each item in a collection to
-     * an <code>OutputStream</code> line by line, using the default character
-     * encoding of the platform.
-     * <p/>
+     * Writes value of each String in a collection to
      *
      * @param lines : lines to write, null entries produce blank lines
      * @return returns the current instance. keep in mind that if instance is not constructed
@@ -241,9 +239,19 @@ public final class SimpleTextWriter implements Closeable {
     }
 
     /**
-     * Writes the <code>toString()</code> value of each item in a collection to
-     * an <code>OutputStream</code> line by line.
-     * <p/>
+     * Writes the value of each item in a String Array with the writer.
+     *
+     * @param lines : lines to write, null entries produce blank lines
+     * @return returns the current instance. keep in mind that if instance is not constructed
+     *         with keepopen, chaining other write methods will throw an exception.
+     * @throws java.io.IOException if an I/O error occurs
+     */
+    public SimpleTextWriter writeLines(String... lines) throws IOException {
+        return writeLines(Arrays.asList(lines));
+    }
+
+    /**
+     * Writes the <code>toString()</code> value of each item in a collection
      *
      * @param objects : lines to write, null entries produce blank lines
      * @return returns the current instance. keep in mind that if instance is not constructed
