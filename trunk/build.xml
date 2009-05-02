@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="jcaki" default="jar" basedir=".">
+
+    <property file="build.properties"/>
+
+    <property name="src.dir" location="src"/>
+    <property name="build.dir" location="build"/>
+    <property name="doc.dir" location="docs"/>
+    <property name="javadoc.dir" location="docs/javadoc"/>
+
+    <!--  compile to build dir -->
+    <target name="compile">
+        <delete dir="${build.dir}"/>
+        <mkdir dir="${build.dir}"/>
+        <javac srcdir="${src.dir}"
+               destdir="${build.dir}"
+               debug="true"
+               source="1.5"
+               target="1.5"
+               debuglevel="vars,lines,source">
+        </javac>
+        <copy todir="${build.dir}">
+            <fileset dir="${src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- jar -->
+    <target name="jar" depends="compile">
+        <delete file="${name}-${version}.jar"/>
+        <jar jarfile="${name}-${version}.jar"
+             basedir="${build.dir}">
+        </jar>
+    </target>
+
+    <target name="javadoc" depends="compile" description="generates javadoc for the api">
+        <mkdir dir="${javadoc.dir}"/>
+        <javadoc sourcepath="${src.dir}" destdir="${javadoc.dir}"
+                 classpath="${build.dir}"
+                 windowtitle="Jmate - Helper Library"
+                 failonerror="true"/>
+        
+    </target>
+
+</project>
+
+
