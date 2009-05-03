@@ -111,4 +111,4 @@ It is possible to clone a SimpleTextReader for another input stream or file.
 public SimpleTextReader cloneForStream(InputStream is)
 public SimpleTextReader cloneForFile(File file)
 }}}
-those methods will use the attributes of a SimpleFileReader and clone it for a provided input stream or file.
+those methods will use the attributes of a SimpleTextReader and clone it for a provided input stream or file.
