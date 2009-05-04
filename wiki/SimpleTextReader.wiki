@@ -10,9 +10,9 @@ SimpleTextReader class contains several methods to make text based file operatio
 *initializaiton:*
 We create a new SimpleTextReader using file name or File object and an optional character encoding string. 
 {{{
-new SimpleFileReader("foo.txt");
-new SimpleFileReader("foo.txt", "utf-8");
-new SimpleFileReader(new File(Systems.getUserHome()+"/foo.txt"))
+new SimpleTextReader ("foo.txt");
+new SimpleTextReader ("foo.txt", "utf-8");
+new SimpleTextReader (new File(Systems.getUserHome()+"/foo.txt"))
 }}}
 
 There are static factory methods also provided. All those methods return Reader or Iterators that trims the lines and ignores the empty or white space lines.
@@ -28,7 +28,7 @@ static IterableLineReader trimmingIterableLineReader(InputStream is, String enco
 Also, a Builder mechanism can be used for initiazlizing advanced SimpleFileReaders. Such as:
 
 {{{
-SimpleFileReader
+SimpleTextReader 
   .Builder("foo.text")
   .encoding("utf-8")
   .trim()
