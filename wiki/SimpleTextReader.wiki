@@ -100,7 +100,7 @@ try {
 }}}
 
 *Line Count:*
-Counts the lines in a file. Note that it will not count lines which are ignored if a constraint is applied during SimpleFileReader creation.
+Counts the lines in a file. Note that it will not count lines which are ignored if a constraint is applied during SimpleTextReader creation.
 {{{
 int lineCount = new SimpleTextReader("foo.txt").countLines();
 }}}
