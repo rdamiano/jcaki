@@ -41,10 +41,6 @@ public final class Strings {
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     /**
-     * Represents a failed index search.
-     */
-    public static final int INDEX_NOT_FOUND = -1;
-    /**
      * <p>The maximum size to which the padding constant(s) can expand.</p>
      */
     private static final int PAD_LIMIT = 8192;
@@ -253,7 +249,8 @@ public final class Strings {
 
     /**
      * inserts the <code>stringToInsert</code> with given <code>interval</code> starting from left.
-     * <p>("0123456", 2, "-") returns "01-23-45-6"
+     * </p>
+     * <pre>("0123456", 2, "-") returns "01-23-45-6"</pre>
      *
      * @param str            input string
      * @param interval       : interval amount
@@ -279,7 +276,8 @@ public final class Strings {
 
     /**
      * inserts the <code>stringToInsert</code> with given <code>interval</code> starting from right.
-     * <p>("0123456", 2, "-") returns "0-12-34-56"
+     * </p>
+     * <pre>("0123456", 2, "-") returns "0-12-34-56"</pre>
      *
      * @param str            input string
      * @param interval       : interval amount
@@ -435,7 +433,7 @@ public final class Strings {
      *         <code>null</code> if null String input
      */
     public static String leftPad(String str, int size) {
-        return leftPad(str, size, ' ');
+        return leftPad(str, size, " ");
     }
 
     /**
@@ -475,12 +473,15 @@ public final class Strings {
 
     /**
      * returns the initial part of a string until the first occurance of a given string.
+     * </p>
+     * <pre>
      * ("hello","lo") -> hel
      * ("hello", "zo") -> hello
      * ("hello", "hello") -> "" empty string.
      * ("hello",null)-> hello
      * (null,"hello")-> null
      * (null,null)-> null
+     * </pre>
      *
      * @param str input string
      * @param s   string to search first occurance.
@@ -497,6 +498,8 @@ public final class Strings {
 
     /**
      * returns the initial part of a string until the last occurance of a given string.
+     * </p>
+     * <pre>
      * ("hellohello","lo") -> hellohel
      * ("hellohello","el") -> helloh
      * ("hellolo", "zo") -> hellolo
@@ -504,6 +507,7 @@ public final class Strings {
      * ("hello",null)-> hello
      * (null,"hello")-> null
      * (null,null)-> null
+     * </pre>
      *
      * @param str input string
      * @param s   string to search last occurance.
@@ -519,7 +523,9 @@ public final class Strings {
     }
 
     /**
-     * returns the last part of a string after the first occurance of a given string.
+     * <p>returns the last part of a string after the first occurance of a given string.</p>
+     * </p>
+     * <pre>
      * ("hello","el") -> lo
      * ("hellohello","el") -> lohello
      * ("hello", "zo") -> hello
@@ -527,6 +533,7 @@ public final class Strings {
      * ("hello",null)-> hello
      * (null,"hello")-> null
      * (null,null)-> null
+     * </pre>
      *
      * @param str input string
      * @param s   string to search first occurance.
@@ -543,6 +550,8 @@ public final class Strings {
 
     /**
      * returns the last part of a string after the last occurance of a given string.
+     * </p>
+     * <pre>
      * ("hello","el") -> lo
      * ("hellohello","el") -> lo
      * ("hello", "zo") -> hello
@@ -550,6 +559,7 @@ public final class Strings {
      * ("hello",null)-> hello
      * (null,"hello")-> null
      * (null,null)-> null
+     * </pre>
      *
      * @param str input string
      * @param s   string to search first occurance.
@@ -600,10 +610,6 @@ public final class Strings {
         if (pads <= 0) {
             return str; // returns original String when possible
         }
-        if (padLen == 1 && pads <= PAD_LIMIT) {
-            return leftPad(str, size, padStr.charAt(0));
-        }
-
         if (pads == padLen) {
             return padStr.concat(str);
         } else if (pads < padLen) {
@@ -624,7 +630,10 @@ public final class Strings {
 
     /**
      * Converts all white spaces to single space. Also eliminates multiple spaces,
+     * </p>
+     * <pre>
      * "  a  aaa \t \n    a\taa  " -> " a aaa a aa "
+     * </pre>
      *
      * @param str input string.
      * @return all white spaces are converted to space character and multiple space chars reduced to single space.
@@ -681,18 +690,22 @@ public final class Strings {
 
     /**
      * Generates 'gram' Strings from a given String. Such as,
+     * </p>
+     * <pre>
      * for ("hello",2) it returns ["he","el","ll","lo"]
      * for ("hello",3) it returns ["hel","ell","llo"]
-     * @param word input String
+     * </pre>
+     *
+     * @param word     input String
      * @param gramSize size of the gram.
      * @return the gams as an array. if the gram size is larger than the word itself, it retuns an empty array.
-     * gram size cannot be smaller than 1
+     *         gram size cannot be smaller than 1
      * @throws IllegalArgumentException if gram size is smaller than 1
      */
     public static String[] separateGrams(String word, int gramSize) {
-        if(gramSize<1)
-           throw new IllegalArgumentException("Gram size cannot be smaller than 1");
-        if( gramSize > word.length())
+        if (gramSize < 1)
+            throw new IllegalArgumentException("Gram size cannot be smaller than 1");
+        if (gramSize > word.length())
             return EMPTY_STRING_ARRAY;
         String[] grams = new String[word.length() - gramSize + 1];
         for (int i = 0; i <= word.length() - gramSize; i++) {

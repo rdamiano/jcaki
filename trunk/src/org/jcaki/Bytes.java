@@ -18,14 +18,14 @@ public class Bytes {
             throw new IllegalArgumentException("4 bytes are required for generating an integer.");
         if (bigEndian) {
             return (pb[0] << 24 & 0xff000000) |
-                   (pb[1] << 16 & 0xff0000) |
-                   (pb[2] << 8 & 0xff00) |
-                   (pb[3] & 0xff);
+                    (pb[1] << 16 & 0xff0000) |
+                    (pb[2] << 8 & 0xff00) |
+                    (pb[3] & 0xff);
         } else {
             return (pb[3] << 24 & 0xff000000) |
-                   (pb[2] << 16 & 0xff0000) |
-                   (pb[1] << 8 & 0xff00) |
-                   (pb[0] & 0xff);
+                    (pb[2] << 16 & 0xff0000) |
+                    (pb[1] << 8 & 0xff00) |
+                    (pb[0] & 0xff);
         }
     }
 
@@ -42,14 +42,14 @@ public class Bytes {
     public static int toInt(byte b0, byte b1, byte b2, byte b3, boolean bigEndian) {
         if (bigEndian) {
             return (b0 << 24 & 0xff000000) |
-                   (b1 << 16 & 0xff0000) |
-                   (b2 << 8 & 0xff00) |
-                   (b3 & 0xff);
+                    (b1 << 16 & 0xff0000) |
+                    (b2 << 8 & 0xff00) |
+                    (b3 & 0xff);
         } else {
             return (b3 << 24 & 0xff000000) |
-                   (b2 << 16 & 0xff0000) |
-                   (b1 << 8 & 0xff00) |
-                   (b0 & 0xff);
+                    (b2 << 16 & 0xff0000) |
+                    (b1 << 8 & 0xff00) |
+                    (b0 & 0xff);
         }
     }
 
@@ -105,14 +105,7 @@ public class Bytes {
      * @throws IllegalArgumentException if amount is smaller than 4, larger than byte array, or not an order of 4.
      */
     public static int[] toIntArray(byte[] ba, int amount, boolean bigEndian) {
-        if (amount < 4 && amount > ba.length)
-            throw new IllegalArgumentException(
-                    "amount of bytes to read cannot be smaller than 4 or larger than byte array length. Amount is:" + amount);
-
-        final int size = amount < ba.length ? amount : ba.length;
-        if (size % 4 != 0)
-            throw new IllegalArgumentException("byte array size must be an order of 4. The size is:" + ba.length);
-
+        final int size = determineSize(amount, ba.length, 4);
         int[] result = new int[size / 4];
         int i = 0;
         for (int j = 0; j < size; j += 4) {
@@ -125,6 +118,18 @@ public class Bytes {
         return result;
     }
 
+    private static int determineSize(int amount, int arrayLength, int order) {
+        if (amount < order || amount > arrayLength)
+            throw new IllegalArgumentException(
+                    "amount of bytes to read cannot be smaller than " + order + " or larger than array length. Amount is:" + amount);
+
+        final int size = amount < arrayLength ? amount : arrayLength;
+        if (size % order != 0)
+            throw new IllegalArgumentException("array size must be an order of " + order + ". The size is:" + arrayLength);
+
+        return size;
+    }
+
     /**
      * Converts a byte array to a short array. byte array length must be an order of 2.
      *
@@ -135,30 +140,26 @@ public class Bytes {
      * @throws IllegalArgumentException if amount is smaller than 4, larger than byte array, or not an order of 4.
      */
     public static short[] toShortArray(byte[] ba, int amount, boolean bigEndian) {
-        if (amount < 2 && amount > ba.length)
-            throw new IllegalArgumentException(
-                    "amount of bytes to read cannot be smaller than 2 or larger than byte array length. Amount is:" + amount);
-        final int size = amount < ba.length ? amount : ba.length;
-        if (size % 2 != 0)
-            throw new RuntimeException("cannot create a short array from odd amount of bytes.");
+        final int size = determineSize(amount, ba.length, 4);
         short[] result = new short[size / 2];
         int i = 0;
-        for (int j = 0; j < size; j+=2) {
-          if (bigEndian) {
-            result[i++] = (short) (ba[j] << 8 & 0xff00 | ba[j + 1] & 0xff);
-          } else {
-            result[i++] = (short) (ba[j + 1] << 8 & 0xff00 | ba[j] & 0xff);
-          }
+        for (int j = 0; j < size; j += 2) {
+            if (bigEndian) {
+                result[i++] = (short) (ba[j] << 8 & 0xff00 | ba[j + 1] & 0xff);
+            } else {
+                result[i++] = (short) (ba[j + 1] << 8 & 0xff00 | ba[j] & 0xff);
+            }
         }
         return result;
     }
 
     /**
-     * Converts a given array of shorts to a byte array. 
-     * @param sa
-     * @param amount
-     * @param bigEndian
-     * @return an array of bytes converted from the input array of shorts. 
+     * Converts a given array of shorts to a byte array.
+     *
+     * @param sa short array
+     * @param amount amount of data to convert from input array
+     * @param bigEndian if it is big endian
+     * @return an array of bytes converted from the input array of shorts.
      *         0xBABE becomes 0xBA, 0xBE (Big Endian) or 0xBE, 0xBA (Little Endian)
      */
     public static byte[] toByteArray(short[] sa, int amount, boolean bigEndian) {
