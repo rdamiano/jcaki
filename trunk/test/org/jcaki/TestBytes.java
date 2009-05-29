@@ -5,22 +5,28 @@ import org.junit.Test;
 
 public class TestBytes {
 
-    byte[] ba = {0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93};
-    int bigEndianInt = 0x7EAC8A93;
-    int littleEndianInt = 0x938AAC7E;
+    byte[] ba = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93};
+    int bigEndianInt = 0x7eac8a93;
+    int littleEndianInt = 0x938aac7e;
 
 
     @Test
     public void testToInt() {
         Assert.assertEquals(Bytes.toInt(ba, true), bigEndianInt);
         Assert.assertEquals(Bytes.toInt(ba, false), littleEndianInt);
-        Assert.assertEquals(Bytes.toInt((byte) 0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93, true), bigEndianInt);
-        Assert.assertEquals(Bytes.toInt((byte) 0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93, false), littleEndianInt);
+        Assert.assertEquals(Bytes.toInt((byte) 0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, true), bigEndianInt);
+        Assert.assertEquals(Bytes.toInt((byte) 0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, false), littleEndianInt);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x7e, (byte) 0xac, (byte) 0x8a}, true), 0x7eac8a);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x7e, (byte) 0xac, (byte) 0x8a}, false), 0x8aac7e);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x7e, (byte) 0xac}, true), 0x7eac);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x7e, (byte) 0xac}, false), 0xac7e);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x7e}, true), 0x7e);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x7e}, false), 0x7e);
     }
 
     @Test
     public void testToByte() {
-        byte[] baReverse = {(byte) 0x93, (byte) 0x8A, (byte) 0xAC, 0x7E};
+        byte[] baReverse = {(byte) 0x93, (byte) 0x8a, (byte) 0xac, 0x7e};
         Assert.assertArrayEquals(Bytes.toByteArray(bigEndianInt, true), ba);
         Assert.assertArrayEquals(Bytes.toByteArray(bigEndianInt, false), baReverse);
         Assert.assertArrayEquals(Bytes.toByteArray(littleEndianInt, false), ba);
@@ -29,10 +35,10 @@ public class TestBytes {
 
     @Test
     public void testToByteShort() {
-        byte[] baShort = {0x43,(byte) 0xAC};
-        byte[] baShortReverse = {(byte) 0xAC, 0x43};
-        short bigEndianShort = 0x43AC;
-        short littleEndianShort = (short)0xAC43;
+        byte[] baShort = {0x43, (byte) 0xac};
+        byte[] baShortReverse = {(byte) 0xac, 0x43};
+        short bigEndianShort = 0x43ac;
+        short littleEndianShort = (short) 0xac43;
         Assert.assertArrayEquals(Bytes.toByteArray(bigEndianShort, true), baShort);
         Assert.assertArrayEquals(Bytes.toByteArray(bigEndianShort, false), baShortReverse);
         Assert.assertArrayEquals(Bytes.toByteArray(littleEndianShort, false), baShort);
@@ -41,35 +47,85 @@ public class TestBytes {
 
     @Test
     public void testToIntArray() {
-        int[] intArr = {0x7EAC8A93, 0x66AABBCC};
-        int[] intArrReverse = {0x938AAC7E, 0xCCBBAA66, };
-        byte[] barr = {0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93, 0x66, (byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
-        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length,true), intArr);
-        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, false), intArrReverse);
+        int[] intArrBig = {0x7eac8a93, 0x66AABBCC};
+        int[] intArrLittle = {0x938aac7e, 0xCCBBAA66,};
+        byte[] barr = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, 0x66, (byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, true), intArrBig);
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, false), intArrLittle);
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 4, true), intArrBig);
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 4, false), intArrLittle);
+
+        barr = new byte[]{0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, 0x66, (byte) 0xAA};
+        intArrBig = new int[]{0x7eac8a, 0x9366aa};
+        intArrLittle = new int[]{0x8aac7e, 0xaa6693};
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 3, true), intArrBig);
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 3, false), intArrLittle);
+
+        barr = new byte[]{0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, 0x66, (byte) 0xAA};
+        intArrBig = new int[]{0x7eac, 0x8a93, 0x66aa};
+        intArrLittle = new int[]{0xac7e, 0x938a, 0xaa66};
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 2, true), intArrBig);
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 2, false), intArrLittle);
+
+        barr = new byte[]{0x7e, (byte) 0xac, (byte) 0x8a};
+        intArrBig = new int[]{0x7e, 0xac, 0x8a};
+        intArrLittle = new int[]{0x7e, 0xac, 0x8a};
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 1, true), intArrBig);
+        Assert.assertArrayEquals(Bytes.toIntArray(barr, barr.length, 1, false), intArrLittle);
     }
 
     @Test
-    public void testToByteArray() {
-        byte[] baBe = {0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93};
-        byte[] baLe = {(byte) 0xAC, 0x7E, (byte) 0x93, (byte) 0x8A};
-        short[] sarr = {0x7EAC, (short) 0x8A93};
+    public void testToByteArrayShort() {
+        byte[] baBe = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93};
+        byte[] baLe = {(byte) 0xac, 0x7e, (byte) 0x93, (byte) 0x8a};
+        short[] sarr = {0x7eac, (short) 0x8a93};
 
         Assert.assertArrayEquals(Bytes.toByteArray(sarr, sarr.length, true), baBe);
         Assert.assertArrayEquals(Bytes.toByteArray(sarr, sarr.length, false), baLe);
     }
 
+    public void testByteArray() {
+        Assert.assertArrayEquals(Bytes.toByteArray(0xCA, 0xFE, 0xBA, 0xBE, 0x45),
+                new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE, 0x45});
+    }
+
+    @Test
+    public void testToByteArrayInt() {
+        int[] sarr4 = {0xCAFEBABE, 0xDEADBEEF};
+        int[] sarr3 = {0xCAFEBA, 0xDEADBE};
+        int[] sarr2 = {0xCAFE, 0xDEAD};
+        int[] sarr1 = {0xCA, 0xFE, 0xBA, 0xBE};
+
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr4, sarr4.length, 4, true),
+                Bytes.toByteArray(0xCA, 0xFE, 0xBA, 0xBE, 0xDE, 0xAD, 0xBE, 0xEF));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr4, sarr4.length, 4, false),
+                Bytes.toByteArray(0xBE, 0xBA, 0xFE, 0xCA, 0xEF, 0xBE, 0xAD, 0xDE));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr3, sarr3.length, 3, true),
+                Bytes.toByteArray(0xCA, 0xFE, 0xBA, 0xDE, 0xAD, 0xBE));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr3, sarr3.length, 3, false),
+                Bytes.toByteArray(0xBA, 0xFE, 0xCA, 0xBE, 0xAD, 0xDE));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr2, sarr2.length, 2, true),
+                Bytes.toByteArray(0xCA, 0xFE, 0xDE, 0xAD));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr2, sarr2.length, 2, false),
+                Bytes.toByteArray(0xFE, 0xCA, 0xAD, 0xDE));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr1, sarr1.length, 1, true),
+                Bytes.toByteArray(0xCA, 0xFE, 0xBA, 0xBE));
+        Assert.assertArrayEquals(Bytes.toByteArray(sarr1, sarr1.length, 1, false),
+                Bytes.toByteArray(0xCA, 0xFE, 0xBA, 0xBE));
+    }
+
     @Test
     public void testToShort() {
-        byte[] barr = {0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93};
-        short[] sarrBe = {0x7EAC, (short) 0x8A93};
-        short[] sarrLe = {(short) 0xAC7E, (short) 0x938A};
+        byte[] barr = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93};
+        short[] sarrBe = {0x7eac, (short) 0x8a93};
+        short[] sarrLe = {(short) 0xac7e, (short) 0x938a};
         Assert.assertArrayEquals(Bytes.toShortArray(barr, barr.length, true), sarrBe);
         Assert.assertArrayEquals(Bytes.toShortArray(barr, barr.length, false), sarrLe);
     }
 
     @Test
     public void testHexDump() {
-        byte[] barr = {0x7E, (byte) 0xAC, (byte) 0x8A, (byte) 0x93, 0x66, (byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
+        byte[] barr = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, 0x66, (byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
         Bytes.hexDump(System.out, barr, 3);
     }
 }

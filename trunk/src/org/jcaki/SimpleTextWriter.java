@@ -299,6 +299,16 @@ public final class SimpleTextWriter implements Closeable {
     }
 
     /**
+     * Writes a LINE_SEPERATOR.
+     *
+     * @return returns the current instance.
+     * @throws IOException if an I/O error occurs
+     */
+    public SimpleTextWriter writeLine() throws IOException {
+        return write("" + IOs.LINE_SEPARATOR);
+    }
+
+    /**
      * Writes toString() of an object the file after appending a line separator to it.
      *
      * @param obj : object to write.

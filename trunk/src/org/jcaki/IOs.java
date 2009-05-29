@@ -177,7 +177,7 @@ public class IOs {
     public static BufferedReader getReader(InputStream is, String charset) throws IOException {
         checkNotNull(is, "input stream cannot be null");
         if (!Strings.hasText(charset))
-            return IOs.getReader(is);
+            return getReader(is);
         if (charset.trim().equalsIgnoreCase("utf-8"))
             return new BufferedReader(new InputStreamReader(forceUTF8(is), "utf-8"));
         else
@@ -330,7 +330,7 @@ public class IOs {
             int ch2 = is2.read();
             return (ch2 == -1);
         } finally {
-            IOs.closeSilently(is1, is2);
+            closeSilently(is1, is2);
         }
     }
 
@@ -358,7 +358,7 @@ public class IOs {
             throw new RuntimeException("MD5 is not available." + e);
         }
         finally {
-            IOs.closeSilently(is);
+            closeSilently(is);
         }
     }
 
@@ -405,7 +405,7 @@ public class IOs {
             byte[] bomRead = new byte[bomBytes.length];
             return is.read(bomRead, 0, bomBytes.length) != -1 && Arrays.equals(bomRead, bomBytes);
         } finally {
-            IOs.closeSilently(is);
+            closeSilently(is);
         }
     }
 
@@ -429,7 +429,7 @@ public class IOs {
             }
             return baos.toByteArray();
         } finally {
-            IOs.closeSilently(is, baos);
+            closeSilently(is, baos);
         }
     }
 
@@ -600,7 +600,7 @@ public class IOs {
                     break;
             }
         } finally {
-            IOs.closeSilently(is, ps, os);
+            closeSilently(is, ps, os);
         }
     }
 
