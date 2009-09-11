@@ -299,7 +299,7 @@ public class Files {
      * @throws IOException if there is a problem accessing the file.
      */
     public static void hexDump(File f, long amount) throws IOException {
-        IOs.hexDump(new FileInputStream(f), System.out, 20, amount);
+        Dumper.hexDump(new FileInputStream(f), System.out, 20, amount);
     }
 
 
@@ -312,7 +312,7 @@ public class Files {
      * @throws IOException if there is a problem accessing the file.
      */
     public static void hexDump(File f, File out, long amount) throws IOException {
-        IOs.hexDump(new FileInputStream(f), new FileOutputStream(out), 20, amount);
+        Dumper.hexDump(new FileInputStream(f), new FileOutputStream(out), 20, amount);
     }
 }
 

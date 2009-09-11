@@ -1,21 +1,50 @@
+/*
+ *
+ * Copyright (c) 2008, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jcaki;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
+import static org.jcaki.Preconditions.checkNotNull;
 
+import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+/**
+ * Byte related low level functions.
+ */
 public class Bytes {
 
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     /**
-     * converts an integer array to a byte array. this is useful when defining byte arrays in the code
+     * converts an unsigned integer array to a byte array. this is useful when defining byte arrays in the code without using
+     * (byte) casts. Note that integers sent to this method should be unsigned. integer are sugggested to be written in
+     * hex format.
      *
-     * @param intz an integer array.
+     * @param uints an integer array formed from unsigned ints.
      * @return a byte array.
+     * @throws IllegalArgumentException if an array item is smaller than zero or larger than 255 (0xff)
      */
-    public static byte[] toByteArray(int... intz) {
-        byte[] bytez = new byte[intz.length];
-        for (int i = 0; i < intz.length; i++) {
-            bytez[i] = (byte) (intz[i] & 0xff);
+    public static byte[] toByteArray(int... uints) {
+        byte[] bytez = new byte[uints.length];
+        for (int i = 0; i < uints.length; i++) {
+            if (uints[i] > 255 || uints[i] < 0)
+                throw new IllegalArgumentException("Cannot convert to byte. Number should be between 0 and 0xff. Number:" + uints[i]);
+            bytez[i] = (byte) (uints[i] & 0xff);
         }
         return bytez;
     }
@@ -289,16 +318,114 @@ public class Bytes {
         return result;
     }
 
-    public static void hexDump(OutputStream os, byte[] bytes, int columns) {
-        PrintStream ps = new PrintStream(os);
-        int cc = 0;
+    /**
+     * converts a byte to a hexadecimal string with special xx formatting. it always return two characters
+     * <pre>
+     * <p>for 0 , returns "00"
+     * <p>for 1..15 returns "00".."0f"
+     * </pre>
+     *
+     * @param b byte
+     * @return hex string.
+     */
+    public static String toHexWithZeros(byte b) {
+        if (b == 0)
+            return "00";
+        String s = toHex(b);
+        if (s.length() == 1)
+            return "0" + s;
+        else
+            return s;
+    }
+
+    /**
+     * converts a byte to a hexadecimal string. it eliminates left zeros.
+     * <pre>
+     * <p>for 0 , returns "0"
+     * <p>for 1 to 15 returns "0".."f"
+     * </pre>
+     *
+     * @param b byte
+     * @return hex string.
+     */
+    public static String toHex(byte b) {
+        return String.format("%x", b);
+    }
+
+    /**
+     * converts byte array to a hexadecimal string. it ignores the zeros on the left side.
+     * <pre>
+     * <p>{0x00, 0x0c, 0x11, 0x01, 0x00} -> "c110100"
+     * </pre>
+     *
+     * @param bytes byte array, should be non-null, and not empty.
+     * @return a String representation of the number represented by the byte array.
+     *         empty string is byte array is empty.
+     * @throws NullPointerException if byte array is null
+     */
+    public static String toHex(byte[] bytes) {
+        checkNotNull(bytes, "byte array cannot be null.");
+        if (bytes.length == 0) return Strings.EMPTY_STRING;
+        StringBuilder builder = new StringBuilder(bytes.length * 2);
+        boolean nonZeroFound = false;
         for (byte b : bytes) {
-            ps.print(Numbers.toHexWithZeros(b));
-            cc++;
-            if (cc % columns == 0)
-                ps.println();
-            else ps.print(" ");
+            if (!nonZeroFound) {
+                if (b != 0) {
+                    builder.append(toHex(b));
+                    nonZeroFound = true;
+                }
+                continue;
+            }
+            builder.append(toHexWithZeros(b));
         }
+        //if all bytes are zero, loop above produces nothing. so we return "0"
+        if (builder.length() == 0 && bytes.length > 0)
+            return "0";
+        else
+            return builder.toString();
+    }
+
+    /**
+     * converts a byte array to a hexadecimal string with special xx formatting. it does not ignore the left zeros.
+     * <pre>
+     * <p>{0x00, 0x0c, 0x11, 0x00} -> "000c1100"
+     * <pre>
+     *
+     * @param bytes byte array
+     * @return hex string.  empty string is byte array is empty.
+     * @throws NullPointerException if byte array is null
+     */
+    public static String toHexWithZeros(byte[] bytes) {
+        checkNotNull(bytes, "byte array cannot be null.");
+        if (bytes.length == 0) return Strings.EMPTY_STRING;
+        StringBuilder builder = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            builder.append(toHexWithZeros(b));
+        }
+        return builder.toString();
+    }
+
+    /**
+     * dumps the bytes to an Outputstream.
+     *
+     * @param os      outputstream.
+     * @param bytes   bytes to dump
+     * @param columns column number
+     * @throws IOException if an error occurs while writing.
+     */
+    public static void hexDump(OutputStream os, byte[] bytes, int columns) throws IOException {
+        Dumper.hexDump(new ByteArrayInputStream(bytes, 0, bytes.length), os, columns, bytes.length);
+    }
+
+    /**
+     * dumps the bytes to Console.
+     *
+     * @param bytes   bytes to dump
+     * @param columns column number
+     * @throws IOException if an error occurs while writing.
+     */
+    public static void hexDump(byte[] bytes, int columns) throws IOException {
+        Dumper.hexDump(new ByteArrayInputStream(bytes, 0, bytes.length), System.out, columns, bytes.length);
     }
 
 }

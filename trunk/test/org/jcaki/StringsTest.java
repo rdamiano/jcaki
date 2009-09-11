@@ -282,6 +282,7 @@ public class StringsTest {
 
     @Test
     public void testSubstringAfterLast() {
+        assertEquals(subStringAfterLast("hello\\world", "\\"), "world");
         assertEquals(subStringAfterLast("hello", "el"), "lo");
         assertEquals(subStringAfterLast("hellohello", "el"), "lo");
         assertEquals(subStringAfterLast("hello", "hello"), "");

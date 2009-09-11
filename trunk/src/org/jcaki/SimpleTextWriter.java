@@ -139,6 +139,18 @@ public final class SimpleTextWriter implements Closeable {
     }
 
     /**
+     * creates a one shot writer, meaning that writer will be closed automatically after any wrte method call.
+     * Uses the default character encoding
+     *
+     * @param os output stream
+     * @return a SimpleTextWriter
+     * @throws java.io.IOException if a problem occurs while creating file.
+     */
+    public static SimpleTextWriter keepOpenWriter(OutputStream os) throws IOException {
+        return new SimpleTextWriter.Builder(os).keepOpen().build();
+    }
+
+    /**
      * Creates a SimpleFileWriter using default encoding. it does not append to the File by default
      * and it closes the underlying output stream once any class method is called by default. If a different
      * behavior is required, SimpleFileWriter.Builder class needs to be used.
@@ -200,6 +212,7 @@ public final class SimpleTextWriter implements Closeable {
 
     /**
      * returns the current encoding.
+     *
      * @return current encoding.
      */
     public String getEncoding() {
