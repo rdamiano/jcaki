@@ -101,7 +101,7 @@ public class IOs {
 
 
     /**
-     * Reads a reader as a list of strings. each item represents one line in the reader which passes the LineConstraints.
+     * Reads a reader as a list of strings. each item represents one line in the reader which passes the Filters.
      *
      * @param reader  a reader
      * @param trim    trims the lines if set
@@ -265,10 +265,11 @@ public class IOs {
      *
      * @param is input stream
      * @param os output stream
+     * @return copied byte count.
      * @throws java.io.IOException if an IO error occurs.
      */
-    public static void copy(InputStream is, OutputStream os) throws IOException {
-        copy(is, os, false);
+    public static long copy(InputStream is, OutputStream os) throws IOException {
+        return copy(is, os, false);
     }
 
     /**
@@ -279,22 +280,27 @@ public class IOs {
      * @param is             input stream
      * @param os             output stream
      * @param keepOutputOpen if true, output stream will not be closed.
+     * @return copied byte count.
      * @throws java.io.IOException if an IO error occurs.
      */
-    static void copy(InputStream is, OutputStream os, boolean keepOutputOpen) throws IOException {
+    static long copy(InputStream is, OutputStream os, boolean keepOutputOpen) throws IOException {
+        long total = 0;
         try {
             checkNotNull(is, "Input stream cannot be null.");
             checkNotNull(os, "Output stream cannot be null.");
             byte[] buf = new byte[BYTE_BUFFER_SIZE];
             int i;
-            while ((i = is.read(buf)) != -1)
+            while ((i = is.read(buf)) != -1) {
                 os.write(buf, 0, i);
+                total += i;
+            }
         }
         finally {
             closeSilently(is);
             if (!keepOutputOpen)
                 closeSilently(os);
         }
+        return total;
     }
 
     /**
@@ -368,7 +374,7 @@ public class IOs {
      * UTF encoded text has a a special information in the beginning of the file called BOM.
      * BOM information is mandatory for all kind of UTF encodings, except UTF-8.
      * Unfortunately, Java assumes UTF-8 files does not have the BOM information. But windows systems usually
-     * puts the UTF-8 BOM data in the begining of the file. This errors in Java applications. This method is a workaround
+     * put the UTF-8 BOM data in the begining of the file. This causes errors in Java applications. This method is a workaround
      * for reading UTF-8 encoded files.
      * Checks if the stream has UTF-8 BOM information in the beginning of a stream. if it has the information,
      * it returns a PushbackStream backed by the input stream but three bytes already read. if BOM does not exist,
@@ -432,7 +438,6 @@ public class IOs {
             closeSilently(is, baos);
         }
     }
-
 
     /**
      * Writes the value of each item in a collection to
@@ -568,40 +573,5 @@ public class IOs {
         }
     }
 
-    /**
-     * dumps the contents of an input stream in hex format to an output stream. both stream are closed at the end of method call
-     *
-     * @param is     file
-     * @param os     output stream to write hex values
-     * @param column the column size of the hex numbers.
-     * @param amount amount of bytes to write.
-     * @throws IOException if there is an error while accesing the file or writing the hex values.
-     */
-    public static void hexDump(InputStream is, OutputStream os, int column, long amount) throws IOException {
-        PrintStream ps = new PrintStream(os);
-        try {
-            byte[] bytes = new byte[column];
-            int i;
-            long total = 0;
-            while ((i = is.read(bytes)) != -1) {
-                for (int j = 0; j < i; j++) {
-                    ps.print(Numbers.toHexWithZeros(bytes[j]) + " ");
-                }
-                for (int j = 0; j < i; j++) {
-                    char c = (char) bytes[j];
-                    if (!Character.isWhitespace(c))
-                        ps.print((char) bytes[j]);
-                    else
-                        ps.print(" ");
-                }
-                ps.println();
-                total += i;
-                if (total >= amount && amount > -1)
-                    break;
-            }
-        } finally {
-            closeSilently(is, ps, os);
-        }
-    }
 
 }

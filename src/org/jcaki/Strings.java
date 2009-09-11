@@ -657,14 +657,19 @@ public final class Strings {
         return WHITE_SPACE.matcher(str).replaceAll("");
     }
 
-    public static String concatWithString(String str, Collection<?> coll) {
-        if (coll == null) return null;
-        if (coll.isEmpty()) return EMPTY_STRING;
+    /**
+     * @param str
+     * @param collection
+     * @return
+     */
+    public static String concatWithString(String str, Collection<?> collection) {
+        if (collection == null) return null;
+        if (collection.isEmpty()) return EMPTY_STRING;
         int i = 0;
         StringBuilder sb = new StringBuilder();
-        for (Object o : coll) {
+        for (Object o : collection) {
             sb.append(o.toString());
-            if (i < coll.size() - 1) {
+            if (i < collection.size() - 1) {
                 sb.append(str);
             }
             i++;
@@ -698,7 +703,7 @@ public final class Strings {
      *
      * @param word     input String
      * @param gramSize size of the gram.
-     * @return the gams as an array. if the gram size is larger than the word itself, it retuns an empty array.
+     * @return the grams as an array. if the gram size is larger than the word itself, it retuns an empty array.
      *         gram size cannot be smaller than 1
      * @throws IllegalArgumentException if gram size is smaller than 1
      */

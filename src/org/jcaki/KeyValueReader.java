@@ -3,10 +3,7 @@ package org.jcaki;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 public class KeyValueReader {
 
@@ -70,8 +67,7 @@ public class KeyValueReader {
 
         if (lines.size() == 0)
             return Collections.emptyMap();
-
-        Map<String, String> result = new HashMap<String, String>(lines.size());
+        Map<String, String> result = new LinkedHashMap<String, String>();
         for (String line : lines) {
             if (!line.contains(separator))
                 throw new IllegalArgumentException("line: [" + line + "] has no separator:" + separator);

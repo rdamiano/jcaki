@@ -1,6 +1,9 @@
 package org.jcaki;
 
+import static org.jcaki.Bytes.toHex;
+import static org.jcaki.Bytes.toHexWithZeros;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class TestBytes {
@@ -8,6 +11,22 @@ public class TestBytes {
     byte[] ba = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93};
     int bigEndianInt = 0x7eac8a93;
     int littleEndianInt = 0x938aac7e;
+
+
+    @Test
+    public void testtoByteArray() {
+        Assert.assertArrayEquals(Bytes.toByteArray(0x7e, 0xac, 0x8a, 0x93), ba);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testtoByteArrayNegativeException() {
+       Assert.assertArrayEquals(Bytes.toByteArray(-1, 0xac, 0x8a, 0x93), ba);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testtoByteArrayLArgeNumberException() {
+       Assert.assertArrayEquals(Bytes.toByteArray(256, 0xac, 0x8a, 0x93), ba);
+    }
 
 
     @Test
@@ -84,6 +103,7 @@ public class TestBytes {
         Assert.assertArrayEquals(Bytes.toByteArray(sarr, sarr.length, false), baLe);
     }
 
+    @Test
     public void testByteArray() {
         Assert.assertArrayEquals(Bytes.toByteArray(0xCA, 0xFE, 0xBA, 0xBE, 0x45),
                 new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE, 0x45});
@@ -124,8 +144,47 @@ public class TestBytes {
     }
 
     @Test
-    public void testHexDump() {
-        byte[] barr = {0x7e, (byte) 0xac, (byte) 0x8a, (byte) 0x93, 0x66, (byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
-        Bytes.hexDump(System.out, barr, 3);
+    public void toHextTest() {
+        assertEquals(toHex((byte) 0), "0");
+        assertEquals(toHex((byte) 1), "1");
+        assertEquals(toHex((byte) 15), "f");
+        assertEquals(toHex((byte) 127), "7f");
+        assertEquals(toHex((byte) 0xcc), "cc");
+        // arrays
+        assertEquals(toHex(new byte[]{(byte) 0x01}), "1");
+        assertEquals(toHex(new byte[]{(byte) 0xcc}), "cc");
+        assertEquals(toHex(new byte[]{0x00, 0x00}), "0");
+        assertEquals(toHex(new byte[]{0x01, 0x1f, (byte) 0xcc}), "11fcc");
+        assertEquals(toHex(new byte[]{0x01, 0x1f, 0x00}), "11f00");
+        assertEquals(toHex(new byte[]{0x00, 0x01, 0x1f, 0x01, 0x00, 0x00}), "11f010000");
     }
+
+    @Test(expected = NullPointerException.class)
+    public void toHexExceptionTest() {
+        toHex(null);
+    }
+
+    //    ~~~~~~~~~~~ toHexWithZerosWithZeros ~~~~~~~~~~~~~~
+
+    @Test
+    public void toHexWithZerostWithZerosTest() {
+        assertEquals(toHexWithZeros((byte) 0), "00");
+        assertEquals(toHexWithZeros((byte) 1), "01");
+        assertEquals(toHexWithZeros((byte) 15), "0f");
+        assertEquals(toHexWithZeros((byte) 127), "7f");
+        assertEquals(toHexWithZeros((byte) 0xcc), "cc");
+        // arrays
+        assertEquals(toHexWithZeros(new byte[]{(byte) 0x01}), "01");
+        assertEquals(toHexWithZeros(new byte[]{(byte) 0xcc}), "cc");
+        assertEquals(toHexWithZeros(new byte[]{0x00, 0x00}), "0000");
+        assertEquals(toHexWithZeros(new byte[]{0x01, 0x1f, (byte) 0xcc}), "011fcc");
+        assertEquals(toHexWithZeros(new byte[]{0x01, 0x1f, 0x00}), "011f00");
+        assertEquals(toHexWithZeros(new byte[]{0x00, 0x01, 0x1f, 0x01, 0x00, 0x00}), "00011f010000");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void toHexWithZerosExceptionTest() {
+        toHexWithZeros(null);
+    }
+
 }

@@ -407,19 +407,26 @@ public final class SimpleTextReader implements Closeable {
     }
 
     /**
-     * counts the lines. if filters are used, it counts ONLY the lines that is passed from the filters.
+     * counts the lines. if there are constraints while creating the reader (eg: not reading empty lines),
+     * it counts ONLY the lines that are allowed to be read.
      *
      * @return line count.
      * @throws IOException if there is a problem while accesing the file.
      */
     public long countLines() throws IOException {
-        LineIterator li = getLineIterator();
-        long i = 0;
-        while (li.hasNext()) {
-            i++;
-            li.next();
+        long i;
+        LineIterator li = null;
+        try {
+            li = getLineIterator();
+            i = 0;
+            while (li.hasNext()) {
+                i++;
+                li.next();
+            }
+            return i;
+        } finally {
+            IOs.closeSilently(li);
         }
-        return i;
     }
 
     /**
