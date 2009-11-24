@@ -191,6 +191,29 @@ public final class Strings {
         return true;
     }
 
+    /**
+     * Checks if the input string only contains allowedCharacters.
+     * @param str input String.
+     * @param allowedChars allowed characters.
+     * @return if String contains only the allowed characters or input values are null, returns true. false otherwise.
+     */
+    public static boolean containsOnly(String str, String allowedChars) {
+        if (str == null || allowedChars == null) {
+            return true;
+        }
+        char[] allowed = allowedChars.toCharArray();
+        for (char c : str.toCharArray()) {
+            boolean found = false;
+            for (char v : allowed)
+                if (c == v) {
+                    found = true;
+                    break;
+                }
+            if (!found)
+                return false;
+        }
+        return true;
+    }
 
     /**
      * Builds a {@link java.lang.String} by repeating a character a specified number of times.

@@ -364,6 +364,7 @@ public final class SimpleTextWriter implements Closeable {
      * @throws IOException
      */
     public void close() throws IOException {
+        os.flush();
         IOs.closeSilently(os);
     }
 

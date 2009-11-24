@@ -239,6 +239,19 @@ public class CountingSet<T> implements Iterable<T> {
         return count;
     }
 
+    /**
+     * removes an item.
+     * @param t item to removed.
+     * @return count of the item before it is removed (if it exits). -1 otherwise.
+     */
+    public int remove(T t) {
+        Integer i = map.remove(t);
+        if (i == null)
+            return -1;
+        else
+            return i;
+    }
+
 
     /**
      * counts the items those count is smaller than amount

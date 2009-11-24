@@ -4,7 +4,10 @@ import static org.jcaki.Bytes.toHex;
 import static org.jcaki.Bytes.toHexWithZeros;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class TestBytes {
 
@@ -20,12 +23,12 @@ public class TestBytes {
 
     @Test(expected = IllegalArgumentException.class)
     public void testtoByteArrayNegativeException() {
-       Assert.assertArrayEquals(Bytes.toByteArray(-1, 0xac, 0x8a, 0x93), ba);
+        Assert.assertArrayEquals(Bytes.toByteArray(-1, 0xac, 0x8a, 0x93), ba);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testtoByteArrayLArgeNumberException() {
-       Assert.assertArrayEquals(Bytes.toByteArray(256, 0xac, 0x8a, 0x93), ba);
+        Assert.assertArrayEquals(Bytes.toByteArray(256, 0xac, 0x8a, 0x93), ba);
     }
 
 
@@ -41,6 +44,13 @@ public class TestBytes {
         Assert.assertEquals(Bytes.toInt(new byte[]{0x7e, (byte) 0xac}, false), 0xac7e);
         Assert.assertEquals(Bytes.toInt(new byte[]{0x7e}, true), 0x7e);
         Assert.assertEquals(Bytes.toInt(new byte[]{0x7e}, false), 0x7e);
+        Assert.assertEquals(Bytes.toInt(new byte[]{0x2f, (byte) 0xff}, false), 0xff2f);
+    }
+
+    @Test
+    public void testNormalize() {
+        Assert.assertEquals(Bytes.normalize(0xff, 8), -1);
+        Assert.assertEquals(Bytes.normalize(0x8000, 16), Short.MIN_VALUE);
     }
 
     @Test
@@ -185,6 +195,12 @@ public class TestBytes {
     @Test(expected = NullPointerException.class)
     public void toHexWithZerosExceptionTest() {
         toHexWithZeros(null);
+    }
+
+    @Test
+    @Ignore(value = "Not a test")
+    public void dump() throws IOException {
+        Bytes.hexDump(new byte[]{0x01}, 20);
     }
 
 }

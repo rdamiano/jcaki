@@ -43,7 +43,8 @@ public class Bytes {
         byte[] bytez = new byte[uints.length];
         for (int i = 0; i < uints.length; i++) {
             if (uints[i] > 255 || uints[i] < 0)
-                throw new IllegalArgumentException("Cannot convert to byte. Number should be between 0 and 0xff. Number:" + uints[i]);
+                throw new IllegalArgumentException("Cannot convert to byte. Number should be between 0 and (255) 0xff. " +
+                        "Number:" + uints[i]);
             bytez[i] = (byte) (uints[i] & 0xff);
         }
         return bytez;
@@ -89,22 +90,39 @@ public class Bytes {
         }
     }
 
-    public static byte[] toByteArray(int i, int size, boolean bigEndian) {
+    public static int normalize(int i, int bitCount) {
+        int max = 0xffffffff >>> (32 - bitCount);
+        if (i > max)
+            throw new IllegalArgumentException("The integer cannot fit to bit boundaries.");
+        if (i > (max >>> 1))
+            return i - (max + 1);
+        else
+            return i;
+    }
+
+    public static void normalize(int iarr[], int bitCount) {
+        for (int i = 0; i < iarr.length; i++) {
+            iarr[i] = normalize(iarr[i], bitCount);
+        }
+    }
+
+
+    public static byte[] toByteArray(int i, int size, boolean isBigEndian) {
         switch (size) {
             case 1:
                 return new byte[]{(byte) i};
             case 2:
-                if (bigEndian)
+                if (isBigEndian)
                     return new byte[]{(byte) (i >>> 8 & 0xff), (byte) (i & 0xff)};
                 else
                     return new byte[]{(byte) (i & 0xff), (byte) (i >>> 8 & 0xff)};
             case 3:
-                if (bigEndian)
+                if (isBigEndian)
                     return new byte[]{(byte) (i >>> 16 & 0xff), (byte) (i >>> 8 & 0xff), (byte) (i & 0xff)};
                 else
                     return new byte[]{(byte) (i & 0xff), (byte) (i >>> 8 & 0xff), (byte) (i >>> 16 & 0xff)};
             case 4:
-                return toByteArray(i, bigEndian);
+                return toByteArray(i, isBigEndian);
             default:
                 throw new IllegalArgumentException("1,2,3 or 4 size values are allowed. size:" + size);
         }
@@ -199,6 +217,7 @@ public class Bytes {
         return result;
     }
 
+
     /**
      * Converts a byte array to an integer array. byte array length must be an order of 4.
      *
@@ -224,6 +243,39 @@ public class Bytes {
         }
         return result;
     }
+
+    /**
+     * Converts a byte array to an integer array. byte array length must be an order of 4.
+     *
+     * @param ba             byte array
+     * @param amount         amount of bytes to convert to int.
+     * @param bytePerInteger byte count per integer.
+     * @param bitAmount      bit count where the value will be mapped.
+     * @param bigEndian      true if big endian.
+     * @return an integer array formed form byte array.
+     * @throws IllegalArgumentException if amount is smaller than 4, larger than byte array, or not an order of 4.
+     */
+    public static int[] toReducedBitIntArray(
+            byte[] ba,
+            final int amount,
+            int bytePerInteger,
+            int bitAmount,
+            boolean bigEndian) {
+        final int size = determineSize(amount, ba.length, bytePerInteger);
+        int[] result = new int[size / bytePerInteger];
+        int i = 0;
+        byte[] bytez = new byte[bytePerInteger];
+        for (int j = 0; j < size; j += bytePerInteger) {
+            System.arraycopy(ba, j, bytez, 0, bytePerInteger);
+            if (bigEndian) {
+                result[i++] = normalize(toInt(bytez, true), bitAmount);
+            } else {
+                result[i++] = normalize(toInt(bytez, false), bitAmount);
+            }
+        }
+        return result;
+    }
+
 
     private static int determineSize(int amount, int arrayLength, int order) {
         if (amount < order || amount > arrayLength)
