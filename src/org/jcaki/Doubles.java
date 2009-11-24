@@ -2,7 +2,7 @@ package org.jcaki;
 
 import static java.lang.Math.abs;
 
-public class ArrayMath {
+public class Doubles {
 
     /**
      * finds the maximum value of an array.
@@ -21,16 +21,6 @@ public class ArrayMath {
         return max;
     }
 
-    public static float max(float... farray) {
-        validateArray(farray);
-        float max = farray[0];
-        for (int i = 1; i < farray.length; i++) {
-            if (farray[i] > max)
-                max = farray[i];
-        }
-        return max;
-    }
-
     public static double min(double... darray) {
         validateArray(darray);
         double min = darray[0];
@@ -41,28 +31,10 @@ public class ArrayMath {
         return min;
     }
 
-
-    public static float min(float... farray) {
-        validateArray(farray);
-        float min = farray[0];
-        for (int i = 1; i < farray.length; i++) {
-            if (farray[i] > min)
-                min = farray[i];
-        }
-        return min;
-    }
-
     private static void validateArray(double... darray) {
         if (darray == null) {
             throw new IllegalArgumentException("array is null!");
         } else if (darray.length == 0)
-            throw new IllegalArgumentException("array is empty!");
-    }
-
-    private static void validateArray(float... farray) {
-        if (farray == null) {
-            throw new IllegalArgumentException("array is null!");
-        } else if (farray.length == 0)
             throw new IllegalArgumentException("array is empty!");
     }
 
@@ -79,19 +51,6 @@ public class ArrayMath {
         return index;
     }
 
-    public static float maxIndex(float... farray) {
-        validateArray(farray);
-        float max = farray[0];
-        int index = 0;
-        for (int i = 1; i < farray.length; i++) {
-            if (farray[i] > max) {
-                max = farray[i];
-                index = i;
-            }
-        }
-        return index;
-    }
-
     public static int minIndex(double... darray) {
         validateArray(darray);
         double min = darray[0];
@@ -99,19 +58,6 @@ public class ArrayMath {
         for (int i = 1; i < darray.length; i++) {
             if (darray[i] > min) {
                 min = darray[i];
-                minIndex = i;
-            }
-        }
-        return minIndex;
-    }
-
-    public static int minIndex(float... farray) {
-        validateArray(farray);
-        float min = farray[0];
-        int minIndex = 0;
-        for (int i = 1; i < farray.length; i++) {
-            if (farray[i] > min) {
-                min = farray[i];
                 minIndex = i;
             }
         }
@@ -153,6 +99,13 @@ public class ArrayMath {
         return mul;
     }
 
+    public static void multiplyInPlace(double[] a1, double[] a2) {
+        validate(a1, a2);
+        for (int i = 0; i < a1.length; i++) {
+            a1[i] = a1[i] * a2[i];
+        }
+    }
+
     public static double[] multiply(double[] a1, double b) {
         validateArray(a1);
         double[] mul = new double[a1.length];
@@ -160,6 +113,13 @@ public class ArrayMath {
             mul[i] = a1[i] * b;
         }
         return mul;
+    }
+
+    public static void multiplyInPlace(double[] a1, double b) {
+        validateArray(a1);
+        for (int i = 0; i < a1.length; i++) {
+            a1[i] = a1[i] * b;
+        }
     }
 
     public static double mean(double... darray) {
@@ -191,6 +151,6 @@ public class ArrayMath {
             throw new NullPointerException("second array is null!");
         if (a1.length != a2.length)
             throw new IllegalArgumentException("Array sizes must be equal. But, first:"
-                    + a1.length + " and second:" + a2.length);
+                    + a1.length + ", and second:" + a2.length);
     }
 }

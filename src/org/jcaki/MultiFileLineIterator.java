@@ -37,7 +37,6 @@ public class MultiFileLineIterator implements Iterator<String> {
     }
 
     public boolean hasNext() {
-
         while (!currentIterator.hasNext()) {
             fileCursor++;
             currentIterator.close();

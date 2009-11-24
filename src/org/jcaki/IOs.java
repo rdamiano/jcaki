@@ -189,10 +189,20 @@ public class IOs {
      * returns a BufferedWriter for the output stream.
      *
      * @param os output stream
-     * @return a bufferedReader for the input stream.
+     * @return a bufferedReader for the output stream.
      */
-    public static BufferedWriter getWriter(OutputStream os) {
+    public static BufferedWriter getBufferedWriter(OutputStream os) {
         return new BufferedWriter(new OutputStreamWriter(os));
+    }
+
+    /**
+     * returns a PrintWriter for the output stream.
+     *
+     * @param os output stream
+     * @return a bufferedReader for the output stream.
+     */
+    public static PrintWriter getPrintWriter(OutputStream os) {
+        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
     }
 
     /**
@@ -200,7 +210,7 @@ public class IOs {
      *
      * @param os      output stream
      * @param charset encoding string.
-     * @return a bufferedReader for the input stream.
+     * @return a bufferedReader for the output stream.
      * @throws java.io.UnsupportedEncodingException
      *          if encoding is not supported.
      */
@@ -208,6 +218,20 @@ public class IOs {
             throws UnsupportedEncodingException {
         return new BufferedWriter(new OutputStreamWriter(os, charset));
 
+    }
+
+    /**
+     * returns a PrintWriter for the output stream.
+     *
+     * @param os      output stream
+     * @param charset encoding string.
+     * @return a PrintWriter for the output stream.
+     * @throws java.io.UnsupportedEncodingException
+     *          if encoding is not supported.
+     */
+    public static PrintWriter getPrintWriter(OutputStream os,  String charset)
+            throws UnsupportedEncodingException {
+        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, charset)));
     }
 
     /**
@@ -344,7 +368,7 @@ public class IOs {
      * Calculates the MD5 of a stream.
      *
      * @param is a non null stream
-     * @return MD5 of the stream as byte array. Can be converted to string using {@link Numbers}
+     * @return MD5 of the stream as byte array.
      * @throws IOException          if an error occurs during read of the stream.
      * @throws NullPointerException if input stream is null
      */
@@ -372,7 +396,7 @@ public class IOs {
 
     /**
      * UTF encoded text has a a special information in the beginning of the file called BOM.
-     * BOM information is mandatory for all kind of UTF encodings, except UTF-8.
+     * BOM information is mandatory for all UTF encodings, except UTF-8.
      * Unfortunately, Java assumes UTF-8 files does not have the BOM information. But windows systems usually
      * put the UTF-8 BOM data in the begining of the file. This causes errors in Java applications. This method is a workaround
      * for reading UTF-8 encoded files.
