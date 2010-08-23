@@ -24,8 +24,8 @@ import static org.jcaki.Preconditions.checkNotNull;
 import static org.jcaki.Preconditions.checkArgument;
 
 import java.io.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.text.Collator;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -33,6 +33,42 @@ import java.util.regex.Pattern;
  * File operations throws RuntimeException instead of IOException.
  */
 public class Files {
+
+    private static class FileModificationTimeComparatorDesc implements Comparator<File> {
+        public int compare(File f1, File f2) {
+            if (f1.lastModified() > f2.lastModified())
+                return 1;
+            else return f1.lastModified() == f2.lastModified() ? 0 : -1;
+        }
+    }
+
+    private static class FileModificationTimeComparatorAsc implements Comparator<File> {
+        public int compare(File f1, File f2) {
+            if (f1.lastModified() < f2.lastModified())
+                return 1;
+            else return f1.lastModified() == f2.lastModified() ? 0 : -1;
+        }
+    }
+
+    public static final Comparator<File> FILE_MODIFICATION_TIME_COMPARATOR_ASC = new FileModificationTimeComparatorAsc();
+    public static final Comparator<File> FILE_MODIFICATION_TIME_COMPARATOR_DESC = new FileModificationTimeComparatorDesc();
+
+    public static Comparator<File> getNameSortingComparator(final Locale locale) {
+        return new Comparator<File>() {
+            public int compare(File file, File file1) {
+                Collator coll = Collator.getInstance(locale);
+                return coll.compare(file.getName(), file1.getName());
+            }
+        };
+    }
+
+    public static Comparator<File> getNameSortingComparator() {
+        return new Comparator<File>() {
+            public int compare(File file, File file1) {
+                return file.getName().compareToIgnoreCase(file1.getName());
+            }
+        };
+    }
 
     /**
      * This is a file filter using regular expressions. if file path/name matches with regexp
@@ -73,6 +109,10 @@ public class Files {
             }
             return false;
         }
+    }
+
+    public static ExtensionFilter extensionFilter(String... extensions) {
+        return new ExtensionFilter(extensions);
     }
 
     static class AcceptAllFilter implements FileFilter {
@@ -125,6 +165,43 @@ public class Files {
 
     /**
      * Crawls into a directory and retrieves all the files in it and its sub directories.
+     *
+     * @param dir        a File representing a directory
+     * @param comparator comparator to apply.
+     * @return all the files in the
+     */
+    public static List<File> getFilesSorted(File dir, Comparator<File> comparator) {
+        checkExistingDirectory(dir);
+        List<File> files = Arrays.asList(dir.listFiles());
+        Collections.sort(files, comparator);
+        return files;
+    }
+
+    /**
+     * Crawls into a directory and retrieves all the files in it and its sub directories.
+     *
+     * @param dir        a File representing a directory
+     * @param comparator comparator to apply.
+     * @param filters    filters to apply.
+     * @return all the files in the
+     */
+    public static List<File> getFilesSorted(File dir, Comparator<File> comparator, FileFilter... filters) {
+        checkExistingDirectory(dir);
+        List<File> files = new ArrayList<File>();
+        for (File file : dir.listFiles()) {
+            for (FileFilter filter : filters) {
+                if (filter.accept(file)) {
+                    files.add(file);
+                    break;
+                }
+            }
+        }
+        Collections.sort(files, comparator);
+        return files;
+    }
+
+    /**
+     * Crawls into a directory and retrieves all the files in it and its sub directories.
      * Only the files matching to the filter will be included.
      *
      * @param dir     a File representing a directory
@@ -146,8 +223,7 @@ public class Files {
      */
     public static List<File> crawlDirectory(File dir, boolean recurseSubDirs, FileFilter... filters) {
         checkNotNull(dir, "File is null!");
-        checkArgument(dir.isDirectory(), "i was expecting a directory..");
-        checkArgument(dir.exists(), "Directory does not exist!.");
+        checkExistingDirectory(dir);
         List<File> files = new ArrayList<File>();
         for (File file : dir.listFiles()) {
             if (file.isDirectory() && recurseSubDirs)
@@ -162,6 +238,12 @@ public class Files {
             }
         }
         return files;
+    }
+
+    private static void checkExistingDirectory(File dir) {
+        checkNotNull(dir, "Dir is null!");
+        checkArgument(dir.exists(), "Directory does not exist! : " + dir);
+        checkArgument(dir.isDirectory(), "i was expecting a directory : " + dir);
     }
 
     /**
@@ -301,7 +383,6 @@ public class Files {
     public static void hexDump(File f, long amount) throws IOException {
         Dumper.hexDump(new FileInputStream(f), System.out, 20, amount);
     }
-
 
     /**
      * This method dumps the contents of a file in hex format to another file.
