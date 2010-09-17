@@ -2,7 +2,7 @@ package org.jcaki;
 
 import static java.lang.Math.abs;
 
-public class Doubles {
+class Doubles {
 
     /**
      * finds the maximum value of an array.
