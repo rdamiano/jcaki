@@ -36,6 +36,7 @@ public final class SimpleTextWriter implements Closeable {
 
     private final String encoding;
     private final boolean keepOpen;
+    private final BufferedWriter writer;
     private final OutputStream os;
 
     /**
@@ -46,24 +47,28 @@ public final class SimpleTextWriter implements Closeable {
     public static class Builder {
         private String _encoding;
         private boolean _keepOpen;
+        private BufferedWriter _writer;
         private OutputStream _os;
 
         public Builder(String fileName) throws IOException {
             checkNotNull(fileName, "File name cannot be null..");
-            this._os = new FileOutputStream(fileName);
             _encoding = Charset.defaultCharset().name();
+            _os = new FileOutputStream(fileName);
+            this._writer = IOs.getBufferedWriter(_os, _encoding);
         }
 
         public Builder(OutputStream os) {
             checkNotNull(os, "File name cannot be null..");
-            this._os = os;
             _encoding = Charset.defaultCharset().name();
+            this._os = os;
+            this._writer = IOs.getBufferedWriter(os, _encoding);
         }
 
         public Builder(File file) throws IOException {
             checkNotNull(file, "File name cannot be null..");
-            this._os = new FileOutputStream(file);
             _encoding = Charset.defaultCharset().name();
+            _os = new FileOutputStream(file);
+            this._writer = IOs.getBufferedWriter(_os, _encoding);
         }
 
         public Builder encoding(String encoding) {
@@ -79,7 +84,7 @@ public final class SimpleTextWriter implements Closeable {
         }
 
         public SimpleTextWriter build() {
-            return new SimpleTextWriter(_os, _encoding, _keepOpen);
+            return new SimpleTextWriter(_writer, _os, _encoding, _keepOpen);
         }
     }
 
@@ -130,9 +135,11 @@ public final class SimpleTextWriter implements Closeable {
     }
 
     private SimpleTextWriter(
+            BufferedWriter writer,
             OutputStream os,
             String encoding,
             boolean keepOpen) {
+        this.writer = writer;
         this.os = os;
         this.encoding = encoding;
         this.keepOpen = keepOpen;
@@ -176,6 +183,7 @@ public final class SimpleTextWriter implements Closeable {
     public SimpleTextWriter(String fileName, String encoding) throws IOException {
         checkNotNull(fileName, "File name cannot be null..");
         this.os = new FileOutputStream(fileName);
+        this.writer = IOs.getBufferedWriter(os, encoding);
         this.encoding = encoding;
         keepOpen = false;
     }
@@ -193,6 +201,7 @@ public final class SimpleTextWriter implements Closeable {
     public SimpleTextWriter(File file, String encoding) throws IOException {
         checkNotNull(file, "File cannot be null..");
         this.os = new FileOutputStream(file);
+        this.writer = IOs.getBufferedWriter(os,encoding);
         this.encoding = encoding;
         keepOpen = false;
     }
@@ -224,16 +233,6 @@ public final class SimpleTextWriter implements Closeable {
     }
 
     /**
-     * retrieves a new BufferedWriter for the output stream
-     *
-     * @return a new BufferedWriter
-     * @throws IOException if an exception occurs while obtaining the writer.
-     */
-    public BufferedWriter getWriter() throws IOException {
-        return IOs.getWriter(os, encoding);
-    }
-
-    /**
      * Writes value of each String in a collection to
      *
      * @param lines : lines to write, null entries produce blank lines
@@ -243,7 +242,7 @@ public final class SimpleTextWriter implements Closeable {
      */
     public SimpleTextWriter writeLines(Collection<String> lines) throws IOException {
         try {
-            IOs.writeLines(lines, os, encoding);
+            IOs.writeLines(lines, writer);
             return this;
         } finally {
             if (!keepOpen)
@@ -273,7 +272,7 @@ public final class SimpleTextWriter implements Closeable {
      */
     public SimpleTextWriter writeToStringLines(Collection<?> objects) throws IOException {
         try {
-            IOs.writeToStringLines(objects, os, encoding);
+            IOs.writeToStringLines(objects, writer);
             return this;
         } finally {
             if (!keepOpen)
@@ -291,7 +290,7 @@ public final class SimpleTextWriter implements Closeable {
      */
     public SimpleTextWriter write(String s) throws IOException {
         try {
-            IOs.writeString(s, os, encoding);
+            writer.write(s);
             return this;
         } finally {
             if (!keepOpen)
@@ -364,8 +363,8 @@ public final class SimpleTextWriter implements Closeable {
      * @throws IOException
      */
     public void close() throws IOException {
-        os.flush();
-        IOs.closeSilently(os);
+        writer.flush();
+        IOs.closeSilently(writer);
     }
 
 }

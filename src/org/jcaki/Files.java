@@ -111,11 +111,14 @@ public class Files {
         }
     }
 
-    public static ExtensionFilter extensionFilter(String... extensions) {
+    public static FileFilter extensionFilter(String... extensions) {
+        if(extensions.length==0) {
+            return new AcceptAllFilter();
+        }
         return new ExtensionFilter(extensions);
     }
 
-    static class AcceptAllFilter implements FileFilter {
+    public static class AcceptAllFilter implements FileFilter {
         public boolean accept(File pathname) {
             return true;
         }
@@ -189,10 +192,14 @@ public class Files {
         checkExistingDirectory(dir);
         List<File> files = new ArrayList<File>();
         for (File file : dir.listFiles()) {
-            for (FileFilter filter : filters) {
-                if (filter.accept(file)) {
-                    files.add(file);
-                    break;
+            if (filters.length == 0)
+                files.add(file);
+            else {
+                for (FileFilter filter : filters) {
+                    if (filter.accept(file)) {
+                        files.add(file);
+                        break;
+                    }
                 }
             }
         }
@@ -229,10 +236,14 @@ public class Files {
             if (file.isDirectory() && recurseSubDirs)
                 files.addAll(crawlDirectory(file, true, filters));
             else if (!file.isDirectory()) {
-                for (FileFilter filter : filters) {
-                    if (filter.accept(file)) {
-                        files.add(file);
-                        break;
+                if (filters.length == 0)
+                    files.add(file);
+                else {
+                    for (FileFilter filter : filters) {
+                        if (filter.accept(file)) {
+                            files.add(file);
+                            break;
+                        }
                     }
                 }
             }
@@ -362,13 +373,26 @@ public class Files {
      * @throws IOException if there is an error during appending files.
      */
     public static void appendFiles(File target, File... filesToAppend) throws IOException {
-        FileOutputStream fos = new FileOutputStream(target, true);
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(target, true));
         try {
             for (File file : filesToAppend) {
-                IOs.copy(new FileInputStream(file), fos, true);
+                IOs.copy(new BufferedInputStream(new FileInputStream(file)), bos, true);
             }
         } finally {
-            IOs.closeSilently(fos);
+            IOs.closeSilently(bos);
+        }
+    }
+
+    /**
+     * Appends files to an output stream. Output stream is not closed after operation is finished.
+     *
+     * @param os            output stream to be appended.
+     * @param filesToAppend filesToMerge
+     * @throws IOException if there is an error during appending files.
+     */
+    public static void appendFiles(OutputStream os, File... filesToAppend) throws IOException {
+        for (File file : filesToAppend) {
+            IOs.copy(new BufferedInputStream(new FileInputStream(file)), os, true);
         }
     }
 

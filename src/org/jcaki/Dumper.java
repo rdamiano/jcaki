@@ -36,7 +36,7 @@ class Dumper {
                     break;
             }
         } finally {
-            IOs.closeSilently(is, ps, os);
+            IOs.closeSilently(is, ps);
         }
-    }
+    }    
 }

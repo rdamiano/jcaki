@@ -25,7 +25,19 @@ import java.util.*;
  */
 public class CountingSet<T> implements Iterable<T> {
 
-    private final Map<T, Integer> map = new HashMap<T, Integer>();
+    private final Map<T, Integer> map;
+
+    public CountingSet(int initialSize) {
+        map = new HashMap<T, Integer>(initialSize);
+    }
+
+    public CountingSet(Map<T, Integer> map) {
+        this.map = map;
+    }
+
+    public CountingSet() {
+        map = new HashMap<T, Integer>(10000);
+    }
 
     /**
      * adds an element. and increments it's count.
@@ -241,6 +253,7 @@ public class CountingSet<T> implements Iterable<T> {
 
     /**
      * removes an item.
+     *
      * @param t item to removed.
      * @return count of the item before it is removed (if it exits). -1 otherwise.
      */
