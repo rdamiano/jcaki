@@ -63,14 +63,12 @@ public class SimpleTextWriterTest {
                 .keepOpen()
                 .build();
         sfw.write("Hello");
-        Assert.assertEquals(new SimpleTextReader(tmpFile).asString(), "Hello");
         sfw.write("Merhaba");
-        Assert.assertEquals(new SimpleTextReader(tmpFile).asString(), "HelloMerhaba");
         sfw.write("");
-        Assert.assertEquals(new SimpleTextReader(tmpFile).asString(), "HelloMerhaba");
         sfw.write(null);
-        Assert.assertEquals(new SimpleTextReader(tmpFile).asString(), "HelloMerhaba");
         IOs.closeSilently(sfw);
+        Assert.assertEquals("HelloMerhaba", new SimpleTextReader(tmpFile).asString());
+
     }
 
     @Test (expected = IOException.class)
