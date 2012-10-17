@@ -36,9 +36,10 @@ import java.util.List;
  */
 public class IOs {
 
-    private static final int BYTE_BUFFER_SIZE = 4096;
+    private static final int BYTE_BUFFER_SIZE = 1 << 16;
 
     public static final String LINE_SEPARATOR;
+    public static final int CHAR_BUFFER_SIZE = 1 << 16;
 
     static {
         // avoid security issues
@@ -70,8 +71,7 @@ public class IOs {
             if (sb.length() >= LINE_SEPARATOR.length())
                 sb.delete(sb.length() - LINE_SEPARATOR.length(), sb.length());
             return sb.toString();
-        }
-        finally {
+        } finally {
             closeSilently(reader);
         }
     }
@@ -93,8 +93,7 @@ public class IOs {
             while ((s = reader.readLine()) != null)
                 res.add(s);
             return res;
-        }
-        finally {
+        } finally {
             closeSilently(reader);
         }
     }
@@ -124,8 +123,7 @@ public class IOs {
                 }
             }
             return res;
-        }
-        finally {
+        } finally {
             closeSilently(reader);
         }
     }
@@ -147,8 +145,7 @@ public class IOs {
             try {
                 if (closeable != null)
                     closeable.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.err.println("IO Exception during closing stream (" + closeable + ")." + e);
             }
         }
@@ -161,7 +158,7 @@ public class IOs {
      * @return a bufferedReader for the input stream.
      */
     public static BufferedReader getReader(InputStream is) {
-        return new BufferedReader(new InputStreamReader(is));
+        return new BufferedReader(new InputStreamReader(is), CHAR_BUFFER_SIZE);
     }
 
     /**
@@ -179,9 +176,9 @@ public class IOs {
         if (!Strings.hasText(charset))
             return getReader(is);
         if (charset.trim().equalsIgnoreCase("utf-8"))
-            return new BufferedReader(new InputStreamReader(forceUTF8(is), "utf-8"));
+            return new BufferedReader(new InputStreamReader(forceUTF8(is), "utf-8"), CHAR_BUFFER_SIZE);
         else
-            return new BufferedReader(new InputStreamReader(is, charset));
+            return new BufferedReader(new InputStreamReader(is, charset), CHAR_BUFFER_SIZE);
 
     }
 
@@ -191,8 +188,13 @@ public class IOs {
      * @param os output stream
      * @return a bufferedReader for the output stream.
      */
-    public static BufferedWriter getBufferedWriter(OutputStream os) {
-        return new BufferedWriter(new OutputStreamWriter(os));
+    public static BufferedWriter getBufferedWriter(OutputStream os, String encoding) {
+        try {
+            return new BufferedWriter(new OutputStreamWriter(os, encoding), CHAR_BUFFER_SIZE);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -202,7 +204,7 @@ public class IOs {
      * @return a bufferedReader for the output stream.
      */
     public static PrintWriter getPrintWriter(OutputStream os) {
-        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(os), CHAR_BUFFER_SIZE));
     }
 
     /**
@@ -216,7 +218,7 @@ public class IOs {
      */
     public static BufferedWriter getWriter(OutputStream os, String charset)
             throws UnsupportedEncodingException {
-        return new BufferedWriter(new OutputStreamWriter(os, charset));
+        return new BufferedWriter(new OutputStreamWriter(os, charset), CHAR_BUFFER_SIZE);
 
     }
 
@@ -229,9 +231,9 @@ public class IOs {
      * @throws java.io.UnsupportedEncodingException
      *          if encoding is not supported.
      */
-    public static PrintWriter getPrintWriter(OutputStream os,  String charset)
+    public static PrintWriter getPrintWriter(OutputStream os, String charset)
             throws UnsupportedEncodingException {
-        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, charset)));
+        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, charset), CHAR_BUFFER_SIZE));
     }
 
     /**
@@ -318,8 +320,7 @@ public class IOs {
                 os.write(buf, 0, i);
                 total += i;
             }
-        }
-        finally {
+        } finally {
             closeSilently(is);
             if (!keepOutputOpen)
                 closeSilently(os);
@@ -343,10 +344,10 @@ public class IOs {
             checkNotNull(is1, "Input stream 1 cannot be null.");
             checkNotNull(is2, "Input stream 2 cannot be null.");
             if (!(is1 instanceof BufferedInputStream)) {
-                is1 = new BufferedInputStream(is1);
+                is1 = new BufferedInputStream(is1, CHAR_BUFFER_SIZE);
             }
             if (!(is2 instanceof BufferedInputStream)) {
-                is2 = new BufferedInputStream(is2);
+                is2 = new BufferedInputStream(is2, CHAR_BUFFER_SIZE);
             }
 
             int ch = is1.read();
@@ -386,8 +387,7 @@ public class IOs {
             return digest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("MD5 is not available." + e);
-        }
-        finally {
+        } finally {
             closeSilently(is);
         }
     }
@@ -496,16 +496,14 @@ public class IOs {
      * <p/>
      * copied and modified from commons-io
      *
-     * @param lines    the lines to write, null entries produce blank lines
-     * @param output   the <code>OutputStream</code> to write to, not null, not closed
-     * @param encoding character encoding.
+     * @param lines  the lines to write, null entries produce blank lines
+     * @param output the <code>BufferedWriter</code> to write to, not null, not closed
      * @throws NullPointerException if the output is null
      * @throws IOException          if an I/O error occurs
      */
     public static void writeLines(Collection<String> lines,
-                                  OutputStream output,
-                                  String encoding) throws IOException {
-        writeToStringLines(lines, output, encoding);
+                                  BufferedWriter output) throws IOException {
+        writeToStringLines(lines, output);
     }
 
     /**
@@ -564,21 +562,16 @@ public class IOs {
      * <p/>
      * copied and modified from commons-io
      *
-     * @param lines    the lines to write, null entries produce blank lines
-     * @param os       the <code>OutputStream</code> to write to, not null, not closed
-     * @param encoding character encoding.
+     * @param lines the lines to write, null entries produce blank lines
      * @throws NullPointerException if the output is null
      * @throws IOException          if an I/O error occurs
      */
     public static void writeToStringLines(
             Collection<?> lines,
-            OutputStream os,
-            String encoding) throws IOException {
+            BufferedWriter writer) throws IOException {
 
         if (lines == null)
             return;
-        if (encoding == null)
-            encoding = Charset.defaultCharset().name();
 
         long i = 0;
         for (Object line : lines) {
@@ -587,13 +580,13 @@ public class IOs {
                 l = line.toString();
 
             if (!Strings.isNullOrEmpty(l))
-                os.write(l.getBytes(encoding));
+                writer.write(l);
             else {
-                os.write(LINE_SEPARATOR.getBytes(encoding));
+                writer.write(LINE_SEPARATOR);
                 continue;
             }
             if (++i < lines.size())
-                os.write(LINE_SEPARATOR.getBytes(encoding));
+                writer.write(LINE_SEPARATOR);
         }
     }
 
