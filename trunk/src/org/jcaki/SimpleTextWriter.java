@@ -290,6 +290,8 @@ public final class SimpleTextWriter implements Closeable {
      */
     public SimpleTextWriter write(String s) throws IOException {
         try {
+            if(s==null || s.length()==0)
+                return this;
             writer.write(s);
             return this;
         } finally {
